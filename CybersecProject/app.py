@@ -1,21 +1,26 @@
+import os
+
 from flask import Flask, redirect, render_template, request, session, url_for
 
 from auth import get_connection, init_db, register_user, verify_user
 
 app = Flask(__name__)
-app.secret_key = "dev-secret-key"
+app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key")
 
-init_db()
 
-try:
-    with get_connection() as conn:
-        with conn.cursor() as cur:
-            cur.execute("SELECT COUNT(*) AS n FROM users")
-            count = cur.fetchone()["n"]
-    print(f"[OK] MySQL connected — cybersecproject.users has {count} accounts")
-except Exception as e:
-    print(f"[ERROR] MySQL not connected: {e}")
-    print("       Start MySQL in XAMPP, then restart this app.")
+def _setup_database():
+    try:
+        init_db()
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT COUNT(*) AS n FROM users")
+                count = cur.fetchone()["n"]
+        print(f"[OK] MySQL connected — users table has {count} accounts")
+    except Exception as e:
+        print(f"[WARN] Database not ready: {e}")
+
+
+_setup_database()
 
 
 @app.route("/")
