@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}HomeFix Connect{% endblock %}</title>
+    <style>
+        :root {
+            --blue: #2E1A84;
+            --orange: #FF8C4B;
+            --orange-hover: #E67A35;
+            --card-width: 340px;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+            background: linear-gradient(180deg, var(--blue) 0%, var(--orange) 100%);
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+        .logo {
+            color: #f5f5f5;
+            font-size: 1.85rem;
+            font-weight: 700;
+            margin: 0 0 1.75rem;
+            letter-spacing: 0.02em;
+            text-align: center;
+        }
+        .card {
+            width: 100%;
+            max-width: var(--card-width);
+            background: #fff;
+            border-radius: 12px;
+            padding: 2rem 1.75rem 1.5rem;
+            box-shadow: 0 10px 36px rgba(0, 0, 0, 0.22);
+            animation: fadeIn 0.35s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .card h2 {
+            margin: 0 0 1.35rem;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #444;
+            text-align: center;
+        }
+        input {
+            width: 100%;
+            margin-bottom: 0.85rem;
+            padding: 0.75rem 0.9rem;
+            border: 1px solid #d8d8d8;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            color: #333;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        input:focus {
+            outline: none;
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(46, 26, 132, 0.12);
+        }
+        input::placeholder { color: #aaa; }
+        .btn-primary {
+            display: block;
+            width: 100%;
+            padding: 0.9rem 1rem;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(90deg, #FF7E36 0%, #FF8C4B 100%);
+            color: #ffffff;
+            font-size: 1rem;
+            font-weight: 500;
+            font-family: inherit;
+            letter-spacing: 0.02em;
+            text-align: center;
+            cursor: pointer;
+            margin-top: 0.75rem;
+            box-shadow: none;
+            transition: background 0.25s ease, opacity 0.25s ease;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(90deg, #FF924E, #FF9A55);
+        }
+        .btn-primary:active {
+            background: linear-gradient(90deg, #E56A2C 0%, #E67438 100%);
+        }
+        .btn-primary:disabled {
+            background: linear-gradient(90deg, #FF7E36 0%, #FF8C4B 100%);
+            opacity: 1;
+            cursor: not-allowed;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .footer-link {
+            margin-top: 1.15rem;
+            text-align: center;
+            font-size: 0.88rem;
+            color: #666;
+        }
+        .footer-link a {
+            color: var(--orange);
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .footer-link a:hover { text-decoration: underline; }
+        .forgot-link {
+            display: block;
+            text-align: right;
+            margin: -0.35rem 0 0.85rem;
+            font-size: 0.8rem;
+        }
+        .forgot-link a {
+            color: #888;
+            text-decoration: none;
+        }
+        .forgot-link a:hover { color: #555; text-decoration: underline; }
+        .password-field {
+            position: relative;
+            margin-bottom: 0.85rem;
+        }
+        .password-field input { margin-bottom: 0; padding-right: 3.5rem; }
+        .toggle-password,
+        .toggle-masked {
+            position: absolute;
+            right: 0.55rem;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background: transparent;
+            color: #888;
+            font-size: 0.75rem;
+            cursor: pointer;
+            padding: 0.25rem;
+            width: auto;
+        }
+        .toggle-password:hover,
+        .toggle-masked:hover { color: var(--blue); }
+        .form-error {
+            background: #fff5f5;
+            border: 1px solid #e74c3c;
+            color: #c0392b;
+            padding: 0.65rem 0.85rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+        .rules {
+            list-style: none;
+            margin: 0 0 1rem;
+            padding: 0;
+            font-size: 0.78rem;
+        }
+        .rules li { margin-bottom: 0.3rem; color: #c0392b; }
+        .rules li.pass { color: #27ae60; }
+        .strength { margin-bottom: 0.75rem; }
+        .strength-label {
+            font-size: 0.78rem;
+            color: #888;
+            margin-bottom: 0.3rem;
+        }
+        .strength-bar {
+            height: 5px;
+            background: #eee;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .strength-fill {
+            height: 100%;
+            width: 0;
+            border-radius: 4px;
+            transition: width 0.3s ease, background 0.3s ease;
+        }
+        .strength-fill.weak { width: 33%; background: #e74c3c; }
+        .strength-fill.medium { width: 66%; background: #f39c12; }
+        .strength-fill.strong { width: 100%; background: #27ae60; }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            z-index: 100;
+            animation: fadeIn 0.25s ease;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal {
+            background: #fff;
+            width: 100%;
+            max-width: 400px;
+            border-radius: 12px;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.28);
+            overflow: hidden;
+        }
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid #ebebeb;
+        }
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #222;
+        }
+        .modal-close {
+            border: none;
+            background: transparent;
+            font-size: 1.35rem;
+            color: #999;
+            cursor: pointer;
+            width: auto;
+            padding: 0 0.25rem;
+            line-height: 1;
+        }
+        .modal-close:hover { color: #333; }
+        .modal-body {
+            padding: 1.5rem 1.25rem;
+            text-align: center;
+            color: #444;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        .modal-footer {
+            padding: 0.75rem 1.25rem 1.25rem;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .btn-modal {
+            padding: 0.6rem 1.35rem;
+            border: none;
+            border-radius: 6px;
+            background: #3498db;
+            color: #fff;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            width: auto;
+            transition: background 0.2s;
+        }
+        .btn-modal:hover { background: #2980b9; }
+        {% block extra_styles %}{% endblock %}
+    </style>
+</head>
+<body>
+    <h1 class="logo">HomeFix Connect</h1>
+    <div class="card">
+        {% block content %}{% endblock %}
+    </div>
+    {% block modals %}{% endblock %}
+
+    <div id="modal-warning" class="modal-overlay">
+        <div class="modal">
+            <header class="modal-header">
+                <h3>Please Check Your Form</h3>
+                <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
+            </header>
+            <p id="warning-message" class="modal-body">Please fill in all required fields.</p>
+            <footer class="modal-footer">
+                <button type="button" class="btn-modal" data-close>OK</button>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+    function showFormWarning(message) {
+        const modal = document.getElementById("modal-warning");
+        const msg = document.getElementById("warning-message");
+        if (modal && msg) {
+            msg.textContent = message;
+            modal.classList.add("show");
+        }
+    }
+    function setupModals() {
+        document.querySelectorAll(".modal-overlay").forEach((overlay) => {
+            const close = () => {
+                overlay.classList.remove("show");
+                const url = new URL(window.location.href);
+                url.searchParams.delete("status");
+                url.searchParams.delete("registered");
+                url.searchParams.delete("user");
+                const query = url.searchParams.toString();
+                window.history.replaceState({}, "", url.pathname + (query ? "?" + query : ""));
+            };
+            overlay.querySelectorAll("[data-close]").forEach((el) => {
+                el.addEventListener("click", close);
+            });
+            overlay.addEventListener("click", (e) => {
+                if (e.target === overlay) close();
+            });
+        });
+        const params = new URLSearchParams(window.location.search);
+        const status = params.get("status");
+        if (status) {
+            const modal = document.getElementById("modal-" + status);
+            if (modal) modal.classList.add("show");
+        }
+        if (params.get("registered") === "1") {
+            const regModal = document.getElementById("modal-registered");
+            if (regModal) regModal.classList.add("show");
+        }
+    }
+    function setupPasswordToggles() {
+        document.querySelectorAll(".toggle-password").forEach((btn) => {
+            btn.addEventListener("click", () => {
+                const input = document.getElementById(btn.dataset.target);
+                const hidden = input.type === "password";
+                input.type = hidden ? "text" : "password";
+                btn.textContent = hidden ? "Hide" : "Show";
+            });
+        });
+    }
+    document.addEventListener("DOMContentLoaded", () => {
+        setupModals();
+        setupPasswordToggles();
+    });
+    </script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

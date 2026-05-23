@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Login — HomeFix Connect{% endblock %}
+{% block content %}
+<h2>Login</h2>
+<form id="login-form" method="post" action="{{ url_for('login') }}">
+    <input id="username" name="username" type="text" placeholder="Username" required autocomplete="username">
+
+    <div class="password-field">
+        <input id="password" name="password" type="password" placeholder="Password" required autocomplete="current-password">
+        <button type="button" class="toggle-password" data-target="password">Show</button>
+    </div>
+
+    <p class="forgot-link"><a href="#" onclick="return false;">Forgot password?</a></p>
+
+    <button id="login-btn" class="btn-primary" type="submit">Login</button>
+</form>
+<p class="footer-link">Don't have an account yet? <a href="{{ url_for('register') }}">Signup</a></p>
+{% endblock %}
+
+{% block modals %}
+<div id="modal-registered" class="modal-overlay">
+    <div class="modal">
+        <header class="modal-header">
+            <h3>Registration Successful</h3>
+            <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
+        </header>
+        <p class="modal-body">You have successfully registered{% if request.args.get('user') %} as <strong>{{ request.args.get('user') }}</strong>{% endif %}! You can now log in.</p>
+        <footer class="modal-footer">
+            <button type="button" class="btn-modal" data-close>OK</button>
+        </footer>
+    </div>
+</div>
+
+<div id="modal-success" class="modal-overlay">
+    <div class="modal">
+        <header class="modal-header">
+            <h3>Login Successful</h3>
+            <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
+        </header>
+        <p class="modal-body">Welcome back! You are now logged in.</p>
+        <footer class="modal-footer">
+            <a class="btn-modal" href="{{ url_for('dashboard') }}">Go to Dashboard</a>
+        </footer>
+    </div>
+</div>
+
+<div id="modal-error" class="modal-overlay">
+    <div class="modal">
+        <header class="modal-header">
+            <h3>Login Failed</h3>
+            <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
+        </header>
+        <p class="modal-body">Invalid username or password. Please try again.</p>
+        <footer class="modal-footer">
+            <button type="button" class="btn-modal" data-close>Try Again</button>
+        </footer>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function () {
+    const form = document.getElementById("login-form");
+    const fields = ["username", "password"];
+
+    form.addEventListener("submit", (e) => {
+        const allFilled = fields.every((id) => document.getElementById(id).value.trim() !== "");
+        if (!allFilled) {
+            e.preventDefault();
+            showFormWarning("Please enter your username and password.");
+        }
+    });
+})();
+</script>
+{% endblock %}

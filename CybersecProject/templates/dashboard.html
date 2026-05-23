@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — HomeFix Connect{% endblock %}
+{% block content %}
+<h2>Dashboard</h2>
+<p style="text-align:center;color:#666;margin:0 0 1.5rem;line-height:1.5;">
+    Welcome, <strong>{{ user }}</strong>!<br>You are logged in.
+</p>
+<a class="btn-primary" href="{{ url_for('logout') }}" style="display:block;text-align:center;text-decoration:none;">Logout</a>
+{% endblock %}

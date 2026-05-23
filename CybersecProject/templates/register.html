@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% block title %}Register — HomeFix Connect{% endblock %}
+{% block extra_styles %}
+        input.masked {
+            -webkit-text-security: disc;
+            text-security: disc;
+            font-family: inherit;
+        }
+        .hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+        .rules li {
+            transition: color 0.25s ease, opacity 0.25s ease;
+        }
+        .strength-fill.strong {
+            background: linear-gradient(90deg, #FF7E36, #FF8C4B);
+        }
+        .btn-primary.btn-register {
+            min-height: 48px;
+            padding: 0.75rem 1rem;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(90deg, #FF7E36, #FF8C4B);
+            color: #FFFFFF;
+            font-size: 17px;
+            font-weight: 700;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: background 0.3s ease-in-out, transform 0.3s ease-in-out,
+                        box-shadow 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        }
+        .btn-primary.btn-register:hover {
+            background: linear-gradient(90deg, #FF924E, #FF9A55);
+            transform: scale(1.02);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+        }
+        .btn-primary.btn-register:active {
+            transform: scale(1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+{% endblock %}
+{% block content %}
+<h2>Register</h2>
+{% if error %}
+<div class="form-error">{{ error }}</div>
+{% endif %}
+<form id="register-form" method="post" action="{{ url_for('register') }}" novalidate autocomplete="off">
+    <input class="hp" type="text" name="fake_user" tabindex="-1" aria-hidden="true">
+    <input class="hp" type="password" name="fake_pass" tabindex="-1" aria-hidden="true">
+    <input id="username" name="username" type="text" placeholder="Username" required
+           autocomplete="off" autocapitalize="off" spellcheck="false"
+           value="{{ username or '' }}">
+
+    <div class="password-field">
+        <input id="password" name="reg_pass" type="text" class="masked" placeholder="Password" required
+               autocomplete="one-time-code" inputmode="text"
+               data-lpignore="true" data-1p-ignore data-bwignore data-form-type="other">
+        <button type="button" class="toggle-masked" data-target="password">Show</button>
+    </div>
+
+    <div class="password-field">
+        <input id="confirm_password" name="reg_pass_confirm" type="text" class="masked" placeholder="Confirm Password" required
+               autocomplete="one-time-code" inputmode="text"
+               data-lpignore="true" data-1p-ignore data-bwignore data-form-type="other">
+        <button type="button" class="toggle-masked" data-target="confirm_password">Show</button>
+    </div>
+
+    <div class="strength">
+        <div class="strength-label">Strength: <span id="strength-text">—</span></div>
+        <div class="strength-bar"><div id="strength-fill" class="strength-fill"></div></div>
+    </div>
+
+    <ul class="rules" id="password-rules">
+        <li data-rule="length" data-label="At least 12 characters">❌ At least 12 characters</li>
+        <li data-rule="lowercase" data-label="At least one lowercase letter">❌ At least one lowercase letter</li>
+        <li data-rule="uppercase" data-label="At least one uppercase letter">❌ At least one uppercase letter</li>
+        <li data-rule="digit" data-label="At least one number">❌ At least one number</li>
+        <li data-rule="symbol" data-label="At least one special character">❌ At least one special character</li>
+        <li data-rule="match" data-label="Passwords match">❌ Passwords match</li>
+    </ul>
+
+    <button id="submit-btn" class="btn-primary btn-register" type="submit">Register</button>
+</form>
+<p class="footer-link">Already have an account? <a href="{{ url_for('login') }}">Login</a></p>
+{% endblock %}
+
+{% block modals %}
+<div id="modal-success" class="modal-overlay">
+    <div class="modal">
+        <header class="modal-header">
+            <h3>Registration Successful</h3>
+            <button type="button" class="modal-close" data-close aria-label="Close">&times;</button>
+        </header>
+        <p class="modal-body">You have successfully registered!</p>
+        <footer class="modal-footer">
+            <a class="btn-modal" href="{{ url_for('login') }}" id="go-to-login">Go to Login</a>
+        </footer>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function () {
+    const form = document.getElementById("register-form");
+    const submitBtn = document.getElementById("submit-btn");
+    const password = document.getElementById("password");
+    const confirm = document.getElementById("confirm_password");
+
+    const rulesList = document.getElementById("password-rules");
+    const strengthText = document.getElementById("strength-text");
+    const strengthFill = document.getElementById("strength-fill");
+    const fields = ["username", "password", "confirm_password"];
+
+    const strengthChecks = {
+        length: (v) => v.length >= 12,
+        lowercase: (v) => /[a-z]/.test(v),
+        uppercase: (v) => /[A-Z]/.test(v),
+        digit: (v) => /\d/.test(v),
+        symbol: (v) => /[^A-Za-z0-9]/.test(v),
+    };
+
+    const matchCheck = () =>
+        password.value !== "" && password.value === confirm.value;
+
+    function strengthLabel(criteriaPassed) {
+        if (criteriaPassed <= 2) return { label: "Weak", class: "weak" };
+        if (criteriaPassed <= 4) return { label: "Medium", class: "medium" };
+        return { label: "Strong", class: "strong" };
+    }
+
+    function countCriteriaPassed(value) {
+        return Object.values(strengthChecks).filter((fn) => fn(value)).length;
+    }
+
+    function allRequirementsMet() {
+        return countCriteriaPassed(password.value) === 5 && matchCheck();
+    }
+
+    function updateValidation() {
+        const value = password.value;
+        const criteriaPassed = countCriteriaPassed(value);
+
+        rulesList.querySelectorAll("li").forEach((li) => {
+            const rule = li.dataset.rule;
+            const ok =
+                rule === "match" ? matchCheck() : strengthChecks[rule](value);
+            li.classList.toggle("pass", ok);
+            li.textContent = (ok ? "✅ " : "❌ ") + li.dataset.label;
+        });
+
+        const strength = strengthLabel(criteriaPassed);
+        strengthText.textContent = value ? strength.label : "—";
+        strengthFill.className = "strength-fill" + (value ? " " + strength.class : "");
+    }
+
+    fields.forEach((id) => {
+        document.getElementById(id).addEventListener("input", updateValidation);
+    });
+
+    form.addEventListener("submit", (e) => {
+        const allFilled = fields.every((id) => document.getElementById(id).value.trim() !== "");
+        if (!allFilled) {
+            e.preventDefault();
+            showFormWarning("Please fill in all fields before registering.");
+            return;
+        }
+        if (!allRequirementsMet()) {
+            e.preventDefault();
+            showFormWarning("Please make sure your password meets all requirements.");
+            updateValidation();
+        }
+    });
+
+    updateValidation();
+
+    document.querySelectorAll(".toggle-masked").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            const input = document.getElementById(btn.dataset.target);
+            const masked = input.classList.contains("masked");
+            if (masked) {
+                input.classList.remove("masked");
+                input.type = "text";
+                btn.textContent = "Hide";
+            } else {
+                input.classList.add("masked");
+                input.type = "text";
+                btn.textContent = "Show";
+            }
+        });
+    });
+})();
+</script>
+{% endblock %}
