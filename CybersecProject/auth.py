@@ -1,4 +1,5 @@
 import hashlib
+import os
 import re
 import secrets
 
@@ -23,20 +24,20 @@ def password_criteria_passed(password: str) -> int:
     return sum(_password_criteria(password).values())
 
 
-# XAMPP MySQL settings (default)
-MYSQL_CONFIG = {
-    "host": "127.0.0.1",
-    "user": "root",
-    "password": "",
-    "database": "cybersecproject",
-    "charset": "utf8mb4",
-    "cursorclass": pymysql.cursors.DictCursor,
-}
+def _mysql_config() -> dict:
+    return {
+        "host": os.environ.get("MYSQLHOST", "127.0.0.1"),
+        "port": int(os.environ.get("MYSQLPORT", "3306")),
+        "user": os.environ.get("MYSQLUSER", "root"),
+        "password": os.environ.get("MYSQLPASSWORD", ""),
+        "database": os.environ.get("MYSQLDATABASE", "cybersecproject"),
+        "charset": "utf8mb4",
+        "cursorclass": pymysql.cursors.DictCursor,
+    }
 
 
 def get_connection():
-    return pymysql.connect(**MYSQL_CONFIG)
-
+    return pymysql.connect(**_mysql_config())
 
 def init_db():
     conn = get_connection()
